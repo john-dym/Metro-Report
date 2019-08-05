@@ -1,6 +1,10 @@
+# Python 3.7
 from tkinter import filedialog
-import xlrd
-import xlwt
+from xlrd import open_workbook
+import openpyxl
+from openpyxl.styles import Border, GradientFill, Alignment, Side, borders
+from os.path import getmtime
+from time import localtime, asctime
 
 # Doors, column labels, metro numbers' variables (Planning to replace with ini file)
 met1 = 'MET015'
@@ -18,7 +22,7 @@ cCaseNo = 'Case No'
 
 #Opens a file dialog and sets the variable wbFile with the path name
 wbFile = filedialog.askopenfilename()
-wb = xlrd.open_workbook(wbFile)
+wb = open_workbook(wbFile)
 ws = wb.sheet_by_index(0)
 
 # Finds the column number for Part No, Part Name, EO, Lot, Loc, Case No.
@@ -81,8 +85,33 @@ for x in range(len(met)):
     combPartQtys = combPartQtys + partQtys
     combPartEOs = combPartEOs + partEOs
 
-#For debugging
-print()
-for z in range(len(combPartNos)):
-    print(str(combPartNos[z]) +', ' + str(combPartNames[z]) + ', ' + str(combPartQtys[z]) + ', ' + str(combPartEOs[z]) + ', ' + str(combPartLocs[z]))
+wb = openpyxl.Workbook()
+tmpfile = 'tmp.xlsx'
+ws = wb.active
+ws['A1'] = 'Metro Box List'
+ws.merge_cells('A1:F1')
+ws['G1'] =  asctime(localtime(getmtime(wbFile)))
+ws['A2'] = 'Part Number'
+ws['B2'] = 'Part Name'
+ws['C2'] = 'Boxes'
+ws['D2'] = 'EO/Lot Qty'
+ws['E2'] = 'Loc. No'
+ws['F2'] = 'Door'
+ws['A1']. = Border(left=Side(style='medium'), right=Side(style='medium'), top=Side(style='medium'), bottom=Side(style='medium'))
+
+for i in range(3,len(combPartNos)):
+    ws['A'+str(i)] = combPartNos[i - 3]
+    ws['B'+str(i)] = combPartNames[i - 3]
+    ws['C'+str(i)] = combPartQtys[i - 3]
+    if combPartEOs[i - 3] != 0:
+        ws['D'+str(i)] = combPartEOs[i - 3]
+    ws['E'+str(i)] = combPartLocs[i - 3]
+    # ws['F'+str(i)] = combPartDoors[i - 3]
+
+wb.save(filename = tmpfile)
+
+# #For debugging
+# print()
+# for z in range(len(combPartNos)):
+#     print(str(combPartNos[z]) +', ' + str(combPartNames[z]) + ', ' + str(combPartQtys[z]) + ', ' + str(combPartEOs[z]) + ', ' + str(combPartLocs[z]))
 
