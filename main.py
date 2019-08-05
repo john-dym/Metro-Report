@@ -2,6 +2,7 @@
 from tkinter import filedialog
 from xlrd import open_workbook
 from os.path import getmtime
+from os import system
 from time import localtime, asctime
 
 import openpyxl
@@ -143,8 +144,4 @@ ws.page_margins.header = 0
 ws.page_margins.footer = 0
 
 wb.save(filename = 'tmp.xlsx')
-
-# #For debugging
-# for z in range(len(combPartNos)):
-#     print(str(combPartNos[z]) +', ' + str(combPartNames[z]) + ', ' + str(combPartQtys[z]) + ', ' + str(combPartEOs[z]) + ', ' + str(combPartLocs[z]))
-
+system('start ' + 'tmp.xlsx')
