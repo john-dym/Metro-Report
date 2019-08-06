@@ -1,5 +1,5 @@
 # Python 3.7
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from xlrd import open_workbook, XLRDError
 from os.path import getmtime
 from os import system
@@ -28,17 +28,17 @@ cCaseNo = 'Case No'
 #Opens a file dialog and sets the variable wbFile with the path name
 wbFile = filedialog.askopenfilename()
 if wbFile == '':
-    print('No file selected. Ending program.')
+    messagebox.showerror('Error','No file selected. Ending program.')
     sys.exit()
 
 #Attempts to open the selected Excel file. If the file is not an Excel file or encrpyted the program will end.
 try:
     wb = open_workbook(wbFile)
 except XLRDError:
-    print('Unsupported format, or corrupt file')
+    messagebox.showerror('Error', 'Unsupported format, or corrupt file')
     sys.exit()
 except:
-    print('Unknown error. Closing Program')
+    messagebox.showerror('Error', 'Unknown error. Closing Program')
     sys.exit()
 
 ws = wb.sheet_by_index(0)
@@ -162,8 +162,10 @@ while True:
         wb.save(filename = 'tmp.xlsx')
         break
     except PermissionError:
-        print('Permission Error: Is the file open? Close and retry')
+        if messagebox.askretrycancel('Error', 'Permission Error: Is the file open? Close and retry') == False:
+            sys.exit()
     except:
-        print('Unknown error. Closing program.')
+        messagebox.showerror('Error', 'Unknown error. Closing Program')
         sys.exit()
+
 system('start ' + 'tmp.xlsx')
