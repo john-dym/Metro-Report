@@ -1,12 +1,12 @@
 # Python 3.7
 from tkinter import filedialog
-from xlrd import open_workbook
+from xlrd import open_workbook, XLRDError
 from os.path import getmtime
 from os import system
 from time import localtime, asctime
-
-import openpyxl
+from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment
+import sys, zipfile
 
 # Doors, column labels, metro numbers' variables (Planning to replace with ini file)
 met1 = 'MET015'
@@ -27,29 +27,42 @@ cCaseNo = 'Case No'
 
 #Opens a file dialog and sets the variable wbFile with the path name
 wbFile = filedialog.askopenfilename()
-wb = open_workbook(wbFile)
+if wbFile == '':
+    print('No file selected. Ending program.')
+    sys.exit()
+
+#Attempts to open the selected Excel file. If the file is not an Excel file or encrpyted the program will end.
+try:
+    wb = open_workbook(wbFile)
+except XLRDError:
+    print('Unsupported format, or corrupt file')
+    sys.exit()
+except:
+    print('Unknown error. Closing Program')
+    sys.exit()
+
 ws = wb.sheet_by_index(0)
 
 # Finds the column number for Part No, Part Name, EO, Lot, Loc, Case No.
-for col_index in range(ws.ncols):
-    if ws.cell(0,col_index).value == cPartNo:
-        cPartNo = int(col_index)
+for i in range(ws.ncols):
+    if ws.cell(0, i).value == cPartNo:
+        cPartNo = int(i)
         break
-for col_index in range(ws.ncols):
-    if ws.cell(0,col_index).value == cPartName:
-        cPartName = int(col_index)
+for i in range(ws.ncols):
+    if ws.cell(0, i).value == cPartName:
+        cPartName = int(i)
         break
-for col_index in range(ws.ncols):
-    if ws.cell(0,col_index).value == cEO:
-        cEO = int(col_index)
+for i in range(ws.ncols):
+    if ws.cell(0, i).value == cEO:
+        cEO = int(i)
         break
-for col_index in range(ws.ncols):
-    if ws.cell(0,col_index).value == cLot:
-        cLot = int(col_index)
+for i in range(ws.ncols):
+    if ws.cell(0, i).value == cLot:
+        cLot = int(i)
         break
-for col_index in range(ws.ncols):
-    if ws.cell(0,col_index).value == cLoc:
-        cLoc = int(col_index)
+for i in range(ws.ncols):
+    if ws.cell(0, i).value == cLoc:
+        cLoc = int(i)
         break
 
 #Defines the list variables
@@ -93,12 +106,12 @@ for x in range(len(met)):
     combPartEOs = combPartEOs + partEOs
     combPartDoors = combPartDoors + partDoors
 
-wb = openpyxl.Workbook()
+wb = Workbook()
 ws = wb.active
 thin = Side(border_style='thin', color='000000') #Creates a variable for setting borders
 
 
-ws['A1'] = 'Metro Box List ' + str(asctime(localtime(getmtime(wbFile)))) #Writes the date/timestamp of the file exported from database in G1
+ws['A1'] = 'Metro Box List         ' + str(asctime(localtime(getmtime(wbFile)))) #Writes the date/timestamp of the file exported from database in G1
 ws['A1'].alignment = Alignment(vertical='center',horizontal='center')
 ws.merge_cells('A1:F1')
 ws['A2'] = 'Part Number'
@@ -108,6 +121,7 @@ ws['D2'] = 'EO/Lot Qty'
 ws['E2'] = 'Loc. No'
 ws['F2'] = 'Door'
 
+#Shades the column headers
 for x in range(ws.max_column):
     for i in range(ws.max_row):
         ws[xlCol[x]+str(i+1)].fill = PatternFill(start_color='e6e6e6', fill_type='solid')
@@ -118,7 +132,7 @@ for i in range(3,len(combPartNos)):
     ws['C'+str(i)] = combPartQtys[i - 3]
     if combPartEOs[i - 3] != 0:         #Ignores writing a 0 in the cell
         ws['D'+str(i)] = combPartEOs[i - 3]
-        ws['D'+str(i)].fill = PatternFill(start_color='e6e6e6', fill_type='solid')
+        ws['D'+str(i)].fill = PatternFill(start_color='ffff00', fill_type='solid')
     ws['E'+str(i)] = combPartLocs[i - 3]
     ws['F'+str(i)] = combPartDoors[i - 3]
 
@@ -143,5 +157,13 @@ ws.page_margins.right = 0.3
 ws.page_margins.header = 0
 ws.page_margins.footer = 0
 
-wb.save(filename = 'tmp.xlsx')
+while True:
+    try:
+        wb.save(filename = 'tmp.xlsx')
+        break
+    except PermissionError:
+        print('Permission Error: Is the file open? Close and retry')
+    except:
+        print('Unknown error. Closing program.')
+        sys.exit()
 system('start ' + 'tmp.xlsx')
