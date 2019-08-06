@@ -6,17 +6,13 @@ from os import system
 from time import localtime, asctime
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment
-import sys, zipfile
+import sys, zipfile, configparser
+from ini_init import iniInit
 
-# Doors, column labels, metro numbers' variables (Planning to replace with ini file)
-met1 = 'MET015'
-met2 = 'MET021'
-met3 = 'MET031'
-a1 = 'A7'
-a2 = 'A8'
-a3 = 'A9'
-met = [met1, met2, met3]
-door = [a1, a2, a3]
+
+# Doors, column labels, metro numbers' variables
+met = []
+door = []
 xlCol = ['A','B','C','D','E','F']
 cPartNo = 'Part No'
 cPartName = 'Part Name'
@@ -24,6 +20,21 @@ cEO = 'EO No'
 cLot = 'LOT No'
 cLoc = 'Loc. No'
 cCaseNo = 'Case No'
+
+#Imports metro.ini file and populates lists. If metro.ini file is not found it creates one
+config=configparser.ConfigParser()
+#Checks if the metro.ini exists and not empty. After creating the file it will attempt to open notepad to edit.
+if config.read('metro.ini') == []:
+    iniInit()
+    messagebox.showerror('Error', 'Creating metro.ini. Please edit the file, save and restart the program')
+    system('start ' + 'metro.ini')
+    sys.exit()
+
+config.read('metro.ini')
+
+for i in config['Door = Metro No']:
+    door.append(i.upper())
+    met.append(config['Door = Metro No'][i])
 
 #Opens a file dialog and sets the variable wbFile with the path name
 wbFile = filedialog.askopenfilename()
