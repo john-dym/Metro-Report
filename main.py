@@ -32,14 +32,16 @@ if wbFile == '':
     sys.exit()
 
 #Attempts to open the selected Excel file. If the file is not an Excel file or encrpyted the program will end.
-try:
-    wb = open_workbook(wbFile)
-except XLRDError:
-    messagebox.showerror('Error', 'Unsupported format, or corrupt file')
-    sys.exit()
-except:
-    messagebox.showerror('Error', 'Unknown error. Closing Program')
-    sys.exit()
+while True:
+    try:
+        wb = open_workbook(wbFile)
+        break
+    except XLRDError:
+        messagebox.showerror('Error', 'Unsupported format, or encrypted file. Try unencrypting in next window then reselect file')
+        wbFile = filedialog.askopenfilename()
+    except:
+        messagebox.showerror('Error', 'Unknown error. Closing Program')
+        sys.exit()
 
 ws = wb.sheet_by_index(0)
 
