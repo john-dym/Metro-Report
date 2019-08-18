@@ -1,16 +1,23 @@
-# Python 3.7
-from tkinter import filedialog, messagebox
+"""
+Python 3.7
+Targeted OS: Windows
+Status: Runs
+"""
+
+#Third Party Python Libraries (xlrd, openpyxl)
 from xlrd import open_workbook, XLRDError
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Border, Side, Alignment
+
+#Standard Python Libraries
+from tkinter import filedialog, messagebox
 from os.path import getmtime
 from os import system
 from time import localtime, asctime
-from openpyxl import Workbook
-from openpyxl.styles import PatternFill, Border, Side, Alignment
 import sys, zipfile, configparser
 from ini_init import iniInit
 
-
-# Doors, column labels, metro numbers' variables
+# Doors, column labels, and metro number variables
 met = []
 door = []
 xlCol = ['A','B','C','D','E','F']
@@ -21,15 +28,15 @@ cLot = 'LOT No'
 cLoc = 'Loc. No'
 cCaseNo = 'Case No'
 
-#Imports metro.ini file and populates lists. If metro.ini file is not found it creates one
-config=configparser.ConfigParser()
 #Checks if the metro.ini exists and not empty. After creating the file it will attempt to open notepad to edit.
+config=configparser.ConfigParser()
 if config.read('metro.ini') == []:
     iniInit()
     messagebox.showerror('Error', 'Creating metro.ini. Please edit the file, save and restart the program')
     system('start ' + 'metro.ini')
     sys.exit()
 
+#Imports metro.ini file and populates lists.
 config.read('metro.ini')
 
 for i in config['Door = Metro No']:
@@ -111,7 +118,7 @@ for x in range(len(met)):
         #Checks to see if the EO or Lot cell is blank, If not blank it adds 1 to the EO/Lot Qty
             if (ws.cell(i, cEO).value != '' or ws.cell(i, cLot).value != ''):
                 partEOs[partNos.index(ws.cell(i, cPartNo).value)] = partEOs[partNos.index(ws.cell(i, cPartNo).value)] + 1
-#Combines lists from previous loops
+    #Combines lists from previous loops
     combPartNos = combPartNos + partNos
     combPartNames = combPartNames + partNames
     combPartLocs = combPartLocs + partLocs
@@ -123,7 +130,7 @@ wb = Workbook()
 ws = wb.active
 thin = Side(border_style='thin', color='000000') #Creates a variable for setting borders
 
-
+#Adds title with date stamp and column labels to final report
 ws['A1'] = 'Metro Box List         ' + str(asctime(localtime(getmtime(wbFile)))) #Writes the date/timestamp of the file exported from database in G1
 ws['A1'].alignment = Alignment(vertical='center',horizontal='center')
 ws.merge_cells('A1:F1')
@@ -139,6 +146,7 @@ for x in range(ws.max_column):
     for i in range(ws.max_row):
         ws[xlCol[x]+str(i+1)].fill = PatternFill(start_color='e6e6e6', fill_type='solid')
 
+#Fills the excel table with data
 for i in range(3,len(combPartNos)):
     ws['A'+str(i)] = combPartNos[i - 3]
     ws['B'+str(i)] = combPartNames[i - 3]
@@ -153,7 +161,8 @@ for i in range(3,len(combPartNos)):
 for x in range(ws.max_column):
     for i in range(ws.max_row):
         ws[xlCol[x]+str(i+1)].border = Border(top=thin, bottom=thin, left=thin, right=thin)
-
+        
+#Preps the Excel report to fit page with minimum margins
 ws.column_dimensions['A'].width = 15
 ws.column_dimensions['B'].width = 45
 ws.column_dimensions['C'].width = 6
@@ -170,6 +179,7 @@ ws.page_margins.right = 0.3
 ws.page_margins.header = 0
 ws.page_margins.footer = 0
 
+#Saves the finished report as tmp.xlsx
 while True:
     try:
         wb.save(filename = 'tmp.xlsx')
